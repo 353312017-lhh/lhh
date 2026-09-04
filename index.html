@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>测测你是哪位历史人物</title>
+    <style>
+        :root {
+            --bg: #f7f0e6;
+            --bg-card: #fdf8f0;
+            --primary: #8b1a1a;
+            --primary-light: #a52a2a;
+            --gold: #c9a96e;
+            --gold-light: #e8d5a3;
+            --text: #2c1810;
+            --text-light: #6b5a4e;
+            --shadow: rgba(44, 24, 16, 0.12);
+            --shadow-strong: rgba(44, 24, 16, 0.2);
+            --radius: 16px;
+            --radius-sm: 10px;
+            --transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            --font-serif: 'Georgia', 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
+            --font-sans: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', sans-serif;
+            --max-width: 460px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            font-size: 16px;
+            height: 100%;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: #e8dcc8;
+            background-image:
+                radial-gradient(ellipse at 20% 30%, rgba(139, 26, 26, 0.04) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 70%, rgba(201, 169, 110, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(255, 255, 255, 0.5) 0%, transparent 80%),
+                repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(139, 26, 26, 0.015) 20px, rgba(139, 26, 26, 0.015) 21px);
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text);
+            overflow-x: hidden;
+            padding: 12px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* 主容器 - 模拟手机应用 */
+        .app-container {
+            width: 100%;
+            max-width: var(--max-width);
+            min-height: calc(100vh - 24px);
+            min-height: calc(100dvh - 24px);
+            background: var(--bg);
+            border-radius: 24px;
+            position: relative;
+            overflow: hidden;
+            box-shadow:
+                0 20px 60px rgba(44, 24, 16, 0.18),
+                0 4px 20px rgba(44, 24, 16, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.6);
+            border: 2px solid var(--gold-light);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 装饰边框 */
+        .app-container::before {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            right: 8px;
+            bottom: 8px;
+            border: 1px solid rgba(201, 169, 110, 0.35);
+            border-radius: 18px;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .app-container::after {
+            content: '';
+            position: absolute;
+            top: 14px;
+            left: 14px;
+            right: 14px;
+            bottom: 14px;
+            border: 1px dashed rgba(201, 169, 110, 0.25);
+            border-radius: 14px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* 页面容器 */
+        .page {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 32px 24px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            transform: translateY(12px);
+            z-index: 2;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .page.active {
+            opacity: 1;
+            pointer-events: all;
+            transform: translateY(0);
+            z-index: 3;
+        }
+        .page.exit-left {
+            opacity: 0;
+            transform: translateX(-30px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        .page.exit-right {
+            opacity: 0;
+            transform: translateX(30px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        /* === 封面页样式 === */
+        .cover-content {
+            text-align: center;
+            width: 100%;
+            max-width: 380px;
+        }
+        .cover-badge {
+            display: inline-block;
+            background: var(--primary);
+            color: #fdf8f0;
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            letter-spacing: 3px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            border: 1px solid var(--gold);
+            box-shadow: 0 2px 10px rgba(139, 26, 26, 0.3);
+        }
+        .cover-title {
+            font-family: var(--font-serif);
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1.3;
+            margin-bottom: 8px;
+            letter-spacing: 4px;
+            text-shadow: 0 2px 4px rgba(139, 26, 26, 0.12);
+        }
+        .cover-subtitle {
+            font-size: 1rem;
+            color: var(--text-light);
+            margin-bottom: 24px;
+            letter-spacing: 2px;
+            line-height: 1.6;
+        }
+        .cover-decoration {
+            font-size: 2.5rem;
+            margin: 16px 0;
+            letter-spacing: 8px;
+            color: var(--gold);
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+        .cover-stats {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            margin-bottom: 24px;
+            letter-spacing: 1px;
+            background: rgba(201, 169, 110, 0.15);
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: inline-block;
+            border: 1px solid rgba(201, 169, 110, 0.3);
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px 40px;
+            border-radius: 50px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            cursor: pointer;
+            border: none;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            font-family: var(--font-sans);
+        }
+        .btn:active {
+            transform: scale(0.96);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, #a52a2a 50%, var(--primary) 100%);
+            color: #fdf8f0;
+            box-shadow: 0 6px 24px rgba(139, 26, 26, 0.35);
+            border: 1px solid rgba(201, 169, 110, 0.5);
+            letter-spacing: 3px;
+        }
+        .btn-primary:hover {
+            box-shadow: 0 8px 32px rgba(139, 26, 26, 0.45);
+            transform: translateY(-1px);
+        }
+        .btn-primary:active {
+            box-shadow: 0 3px 12px rgba(139, 26, 26, 0.3);
+        }
+        .btn-outline {
+            background: transparent;
+            color: var(--primary);
+            border: 1.5px solid var(--primary);
+            letter-spacing: 2px;
+            padding: 12px 28px;
+            font-size: 0.9rem;
+        }
+        .btn-outline:hover {
+            background: rgba(139, 26, 26, 0.06);
+        }
+        .btn-gold {
+            background: linear-gradient(135deg, var(--gold) 0%, #d4b87a 50%, var(--gold) 100%);
+            color: #2c1810;
+            box-shadow: 0 4px 16px rgba(201, 169, 110, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .btn-gold:hover {
+            box-shadow: 0 6px 24px rgba(201, 169, 110, 0.5);
+        }
+        .btn-sm {
+            padding: 10px 20px;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 8px;
+        }
+
+        /* === 答题页样式 === */
+        .quiz-header {
+            width: 100%;
+            max-width: 380px;
+            margin-bottom: 20px;
+            flex-shrink: 0;
+        }
+        .quiz-top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .quiz-counter {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+        .quiz-counter span {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        .quiz-back {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            font-size: 0.85rem;
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 16px;
+            transition: var(--transition);
+            letter-spacing: 1px;
+            touch-action: manipulation;
+        }
+        .quiz-back:hover {
+            background: rgba(0, 0, 0, 0.05);
+            color: var(--text);
+        }
+        .progress-bar-wrap {
+            width: 100%;
+            height: 5px;
+            background: rgba(201, 169, 110, 0.25);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--gold) 0%, var(--primary) 100%);
+            border-radius: 10px;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 0%;
+        }
+        .quiz-question {
+            font-family: var(--font-serif);
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text);
+            text-align: center;
+            line-height: 1.6;
+            margin-bottom: 28px;
+            letter-spacing: 1px;
+            max-width: 380px;
+            flex-shrink: 0;
+        }
+        .quiz-options {
+            width: 100%;
+            max-width: 380px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex: 1;
+            justify-content: center;
+        }
+        .option-btn {
+            display: block;
+            width: 100%;
+            padding: 16px 20px;
+            background: var(--bg-card);
+            border: 1.5px solid rgba(201, 169, 110, 0.4);
+            border-radius: var(--radius-sm);
+            font-size: 0.95rem;
+            color: var(--text);
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: left;
+            line-height: 1.5;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            font-family: var(--font-sans);
+            box-shadow: 0 2px 8px rgba(44, 24, 16, 0.06);
+        }
+        .option-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--gold);
+            border-radius: 2px 0 0 2px;
+            opacity: 0;
+            transition: var(--transition);
+        }
+        .option-btn:hover {
+            border-color: var(--gold);
+            box-shadow: 0 4px 16px rgba(44, 24, 16, 0.1);
+            transform: translateY(-1px);
+            background: #fffdf8;
+        }
+        .option-btn:hover::before {
+            opacity: 1;
+        }
+        .option-btn:active {
+            transform: scale(0.97);
+            box-shadow: 0 1px 4px rgba(44, 24, 16, 0.08);
+        }
+        .option-btn.selected {
+            border-color: var(--primary);
+            background: rgba(139, 26, 26, 0.06);
+            box-shadow: 0 0 0 3px rgba(139, 26, 26, 0.12);
+            transform: scale(0.98);
+        }
+        .option-btn.selected::before {
+            background: var(--primary);
+            opacity: 1;
+        }
+        .option-btn .option-label {
+            display: inline-block;
+            font-weight: 700;
+            color: var(--primary);
+            margin-right: 8px;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+
+        /* === 结果页样式 === */
+        .result-content {
+            text-align: center;
+            width: 100%;
+            max-width: 380px;
+            animation: fadeUp 0.6s ease-out;
+        }
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(24px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .result-seal {
+            width: 80px;
+            height: 80px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--primary) 0%, #7a1515 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 2.2rem;
+            color: #fdf8f0;
+            box-shadow: 0 6px 20px rgba(139, 26, 26, 0.35);
+            border: 2px solid var(--gold);
+            transform: rotate(-3deg);
+            position: relative;
+        }
+        .result-seal::after {
+            content: '';
+            position: absolute;
+            inset: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 11px;
+        }
+        .result-title-label {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            letter-spacing: 4px;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+        .result-name {
+            font-family: var(--font-serif);
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: 6px;
+            margin-bottom: 4px;
+            line-height: 1.2;
+            text-shadow: 0 2px 8px rgba(139, 26, 26, 0.15);
+        }
+        .result-title {
+            font-size: 1rem;
+            color: var(--gold);
+            letter-spacing: 3px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            border-bottom: 1px solid rgba(201, 169, 110, 0.4);
+            padding-bottom: 12px;
+            display: inline-block;
+        }
+        .result-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .result-tag {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            background: rgba(201, 169, 110, 0.18);
+            border: 1px solid rgba(201, 169, 110, 0.4);
+            color: var(--text);
+            font-weight: 500;
+        }
+        .result-desc {
+            font-size: 0.95rem;
+            color: var(--text);
+            line-height: 1.8;
+            margin-bottom: 16px;
+            text-align: left;
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(201, 169, 110, 0.3);
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 12px rgba(44, 24, 16, 0.06);
+        }
+        .result-quote {
+            font-family: var(--font-serif);
+            font-style: italic;
+            font-size: 1rem;
+            color: var(--primary);
+            letter-spacing: 1.5px;
+            line-height: 1.7;
+            margin-bottom: 24px;
+            padding: 12px 16px;
+            border-left: 3px solid var(--gold);
+            background: rgba(201, 169, 110, 0.08);
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            text-align: left;
+        }
+        .result-share-section {
+            margin-top: 8px;
+        }
+        .result-share-hint {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            margin-top: 12px;
+            letter-spacing: 1px;
+            opacity: 0.8;
+        }
+
+        /* 分享提示弹窗 */
+        .share-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .share-overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .share-modal {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 28px 24px;
+            max-width: 340px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border: 2px solid var(--gold);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+        .share-overlay.show .share-modal {
+            transform: scale(1);
+        }
+        .share-modal-icon {
+            font-size: 3rem;
+            margin-bottom: 12px;
+        }
+        .share-modal-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+        .share-modal-desc {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        .share-modal-btn {
+            display: block;
+            width: 100%;
+            padding: 12px 20px;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            letter-spacing: 1px;
+            transition: var(--transition);
+            font-family: var(--font-sans);
+            touch-action: manipulation;
+        }
+        .share-modal-btn:active {
+            transform: scale(0.96);
+        }
+        .share-modal-close {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            font-size: 0.8rem;
+            cursor: pointer;
+            margin-top: 12px;
+            padding: 6px 12px;
+            letter-spacing: 1px;
+        }
+
+        /* Toast提示 */
+        .toast {
+            position: fixed;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: rgba(44, 24, 16, 0.9);
+            color: #fdf8f0;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            z-index: 200;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.4s ease;
+            white-space: nowrap;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* 响应式 */
+        @media (max-width: 480px) {
+            body {
+                padding: 6px;
+            }
+            .app-container {
+                min-height: calc(100vh - 12px);
+                min-height: calc(100dvh - 12px);
+                border-radius: 18px;
+            }
+            .page {
+                padding: 24px 18px;
+            }
+            .cover-title {
+                font-size: 1.8rem;
+                letter-spacing: 2px;
+            }
+            .result-name {
+                font-size: 2.2rem;
+                letter-spacing: 3px;
+            }
+            .quiz-question {
+                font-size: 1.05rem;
+            }
+            .option-btn {
+                padding: 14px 16px;
+                font-size: 0.9rem;
+            }
+            .result-desc {
+                padding: 16px;
+                font-size: 0.9rem;
+            }
+        }
+        @media (min-width: 768px) {
+            .app-container {
+                min-height: auto;
+                height: auto;
+                max-height: calc(100vh - 40px);
+                overflow-y: auto;
+            }
+            .page {
+                position: relative;
+                min-height: 500px;
+            }
+            .page:not(.active) {
+                display: none;
+            }
+            .page.active {
+                display: flex;
+                position: relative;
+            }
+            .app-container {
+                display: block;
+            }
+            .page {
+                position: relative;
+                top: auto;
+                left: auto;
+                right: auto;
+                bottom: auto;
+            }
+            .page.active {
+                position: relative;
+            }
+            .app-container::before,
+            .app-container::after {
+                pointer-events: none;
+            }
+        }
+        @media (min-width: 768px) {
+            .page {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+            }
+            .page.active {
+                position: absolute;
+            }
+            .app-container {
+                height: calc(100vh - 40px);
+                max-height: 700px;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+            }
+            .page {
+                overflow-y: auto;
+            }
+        }
+        @media (min-width: 900px) {
+            .app-container {
+                max-height: 750px;
+            }
+        }
+
+        /* 减少运动 */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Toast 提示 -->
+    <div class="toast" id="toast"></div>
+
+    <!-- 分享提示弹窗 -->
+    <div class="share-overlay" id="shareOverlay">
+        <div class="share-modal">
+            <div class="share-modal-icon">📜</div>
+            <div class="share-modal-title">分享给朋友</div>
+            <div class="share-modal-desc">复制链接分享给好友，让他们也来测测是哪位历史人物吧！</div>
+            <button class="share-modal-btn" id="copyLinkBtn">📋 复制分享链接</button>
+            <button class="share-modal-close" id="closeShareBtn">关闭</button>
+        </div>
+    </div>
+
+    <!-- 主容器 -->
+    <div class="app-container" id="app">
+
+        <!-- 封面页 -->
+        <div class="page active" id="pageCover">
+            <div class="cover-content">
+                <div class="cover-badge">✦ 趣味测试 ✦</div>
+                <h1 class="cover-title">测测你是哪位<br>历史人物</h1>
+                <p class="cover-subtitle">穿越千年，遇见另一个自己</p>
+                <div class="cover-decoration">❀ ─── ⚘ ─── ❀</div>
+                <p class="cover-stats" id="coverStats">已有 32,847 人参与测试</p>
+                <div style="margin-top:12px;">
+                    <button class="btn btn-primary" id="startBtn">开 始 测 试</button>
+                </div>
+                <p style="font-size:0.75rem;color:var(--text-light);margin-top:16px;letter-spacing:1px;opacity:0.7;">
+                    共10道题 · 约需2分钟
+                </p>
+            </div>
+        </div>
+
+        <!-- 答题页 -->
+        <div class="page" id="pageQuiz">
+            <div class="quiz-header">
+                <div class="quiz-top-row">
+                    <span class="quiz-counter">第 <span id="currentQ">1</span>/10 题</span>
+                    <button class="quiz-back" id="backBtn" style="opacity:0;pointer-events:none;">← 上一题</button>
+                </div>
+                <div class="progress-bar-wrap">
+                    <div class="progress-bar-fill" id="progressBar"></div>
+                </div>
+            </div>
+            <h2 class="quiz-question" id="questionText">加载中...</h2>
+            <div class="quiz-options" id="optionsContainer"></div>
+        </div>
+
+        <!-- 结果页 -->
+        <div class="page" id="pageResult">
+            <div class="result-content" id="resultContent">
+                <!-- 动态填充 -->
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        (function() {
+            // ==================== 数据层 ====================
+
+            // 历史人物数据
+            const characters = {
+                libai: {
+                    name: '李白',
+                    title: '浪漫主义诗人 · 诗仙',
+                    tags: ['自由不羁', '才华横溢', '豪放洒脱'],
+                    desc: '你如李白般浪漫豪放，追求精神自由，不为世俗所束缚。你的才华与想象力让你在人群中熠熠生辉，你的人生如诗如画，充满了激情与创造力。你敢于打破常规，用独特的视角看待世界，在平凡中发现非凡。',
+                    quote: '"天生我材必有用，千金散尽还复来"',
+                    emoji: '🍶',
+                    color: '#8b1a1a'
+                },
+                zhugeliang: {
+                    name: '诸葛亮',
+                    title: '智慧谋士 · 千古名相',
+                    tags: ['智慧深远', '心思缜密', '鞠躬尽瘁'],
+                    desc: '你如诸葛亮般睿智沉稳，善于洞察世事，运筹帷幄之中，决胜千里之外。你对事业忠诚执着，对朋友真诚以待。你的智慧与远见让你在任何领域都能成就非凡，是众人信赖的智囊与支柱。',
+                    quote: '"非淡泊无以明志，非宁静无以致远"',
+                    emoji: '🪶',
+                    color: '#2c5f2d'
+                },
+                wuzetian: {
+                    name: '武则天',
+                    title: '一代女皇 · 雄才大略',
+                    tags: ['果敢决断', '雄心壮志', '魄力非凡'],
+                    desc: '你如武则天般拥有非凡的魄力与决断力，敢于打破常规，追求卓越。你的领导才能与坚韧意志让你在逆境中依然能够开创属于自己的天地。你从不满足于现状，永远在追求更高的目标。',
+                    quote: '"看朱成碧思纷纷，憔悴支离为忆君"',
+                    emoji: '👑',
+                    color: '#6b1a6b'
+                },
+                xiangyu: {
+                    name: '项羽',
+                    title: '西楚霸王 · 英雄盖世',
+                    tags: ['勇武豪情', '重情重义', '霸气凛然'],
+                    desc: '你如项羽般勇武豪迈，重情重义。你行事果敢，不拖泥带水，对身边之人极重情义。你的霸气与担当让众人愿意追随于你。在你身上，有一种与生俱来的英雄气质，令人心生敬仰。',
+                    quote: '"力拔山兮气盖世，时不利兮骓不逝"',
+                    emoji: '⚔️',
+                    color: '#4a3728'
+                },
+                sushis: {
+                    name: '苏轼',
+                    title: '旷达文豪 · 千古风流',
+                    tags: ['豁达乐观', '才华横溢', '热爱生活'],
+                    desc: '你如苏轼般豁达通透，无论顺境逆境都能保持乐观从容。你才华横溢却不自傲，热爱生活，善于发现平凡中的美好。你的人格魅力让身边人如沐春风，是真正的乐天派与生活家。',
+                    quote: '"竹杖芒鞋轻胜马，谁怕？一蓑烟雨任平生"',
+                    emoji: '🍃',
+                    color: '#3d6b35'
+                },
+                wangyangming: {
+                    name: '王阳明',
+                    title: '心学大师 · 知行合一',
+                    tags: ['内省深刻', '知行合一', '智慧通透'],
+                    desc: '你如王阳明般注重内在修养，追求真理与智慧。你善于思考，洞察人心，能够将认知与实践完美结合。你的内心强大而平静，是众人信赖的精神支柱。你的人生哲学深刻而实用，指引着身边人前行。',
+                    quote: '"知行合一，致良知"',
+                    emoji: '🧘',
+                    color: '#1a4a5f'
+                },
+                liqingzhao: {
+                    name: '李清照',
+                    title: '才情词人 · 婉约宗主',
+                    tags: ['才情细腻', '情感丰富', '独立坚强'],
+                    desc: '你如李清照般才情横溢，内心世界丰富而细腻。你对美有着独特的感知力，情感真挚而深刻。你外表温婉，内心却有着超乎常人的坚韧与独立。你的文字与思想如清泉般澄澈动人。',
+                    quote: '"生当作人杰，死亦为鬼雄"',
+                    emoji: '🌸',
+                    color: '#a04a5a'
+                },
+                qinshihuang: {
+                    name: '秦始皇',
+                    title: '千古一帝 · 开创伟业',
+                    tags: ['雄才大略', '追求卓越', '开创精神'],
+                    desc: '你如秦始皇般拥有宏大的格局与开创精神，不满足于现状，追求卓越与永恒。你的远见与执行力让你能够完成常人难以企及的伟业。你天生具有领袖气质，注定要成就一番不凡事业。',
+                    quote: '"朕为始皇帝，后世以计数"',
+                    emoji: '🐉',
+                    color: '#3d3d3d'
+                }
+            };
+
+            // 人物列表（用于匹配）
+            const characterKeys = Object.keys(characters);
+
+            // 测试题目
+            const questions = [{
+                text: '周末你最喜欢怎样度过？',
+                options: [
+                    { label: 'A', text: '约三五好友饮酒作诗，畅谈天下', scores: { libai: 2, sushis: 2 } },
+                    { label: 'B', text: '独自一人安静读书思考', scores: { zhugeliang: 2, wangyangming: 2 } },
+                    { label: 'C', text: '规划未来目标，制定详细计划', scores: { wuzetian: 2, qinshihuang: 2 } },
+                    { label: 'D', text: '与知己深度交流，分享内心感受', scores: { liqingzhao: 2, xiangyu: 1 } }
+                ]
+            }, {
+                text: '面对突如其来的困难，你的第一反应是？',
+                options: [
+                    { label: 'A', text: '冷静分析局势，找出最优解', scores: { zhugeliang: 2, wangyangming: 2 } },
+                    { label: 'B', text: '勇往直前，用实力正面突破', scores: { xiangyu: 2, qinshihuang: 2 } },
+                    { label: 'C', text: '保持乐观，相信一切都会好起来', scores: { sushis: 2, libai: 1 } },
+                    { label: 'D', text: '先稳住情绪，再想办法解决', scores: { wuzetian: 2, liqingzhao: 1 } }
+                ]
+            }, {
+                text: '你理想中的生活状态是？',
+                options: [
+                    { label: 'A', text: '自由自在，四处游历，无拘无束', scores: { libai: 2, sushis: 1 } },
+                    { label: 'B', text: '建功立业，成就一番伟大事业', scores: { qinshihuang: 2, wuzetian: 2 } },
+                    { label: 'C', text: '与志同道合之人共事，实现共同理想', scores: { zhugeliang: 2, xiangyu: 1 } },
+                    { label: 'D', text: '平淡安稳，有书有茶有知己', scores: { liqingzhao: 2, wangyangming: 1 } }
+                ]
+            }, {
+                text: '在团队中，你通常扮演什么角色？',
+                options: [
+                    { label: 'A', text: '出谋划策的军师', scores: { zhugeliang: 2, wangyangming: 1 } },
+                    { label: 'B', text: '冲锋陷阵的先锋', scores: { xiangyu: 2, libai: 1 } },
+                    { label: 'C', text: '统筹全局的领袖', scores: { qinshihuang: 2, wuzetian: 2 } },
+                    { label: 'D', text: '调和关系的纽带', scores: { liqingzhao: 2, sushis: 2 } }
+                ]
+            }, {
+                text: '你更看重什么？',
+                options: [
+                    { label: 'A', text: '情义与承诺', scores: { xiangyu: 2, liqingzhao: 1 } },
+                    { label: 'B', text: '智慧与真理', scores: { wangyangming: 2, zhugeliang: 1 } },
+                    { label: 'C', text: '自由与创造', scores: { libai: 2, sushis: 2 } },
+                    { label: 'D', text: '权力与成就', scores: { wuzetian: 2, qinshihuang: 2 } }
+                ]
+            }, {
+                text: '当朋友遇到困难时，你会？',
+                options: [
+                    { label: 'A', text: '立即出手相助，义不容辞', scores: { xiangyu: 2, libai: 1 } },
+                    { label: 'B', text: '帮忙分析问题，给出建议', scores: { zhugeliang: 2, wangyangming: 2 } },
+                    { label: 'C', text: '陪伴在身边，给予情感支持', scores: { liqingzhao: 2, sushis: 1 } },
+                    { label: 'D', text: '调动资源，从根本上解决问题', scores: { wuzetian: 2, qinshihuang: 1 } }
+                ]
+            }, {
+                text: '你最喜欢哪种艺术风格？',
+                options: [
+                    { label: 'A', text: '豪放飘逸，大气磅礴', scores: { libai: 2, xiangyu: 1, qinshihuang: 1 } },
+                    { label: 'B', text: '婉约细腻，意境悠远', scores: { liqingzhao: 2, wangyangming: 1 } },
+                    { label: 'C', text: '旷达洒脱，自然天成', scores: { sushis: 2, libai: 1 } },
+                    { label: 'D', text: '严谨工整，气势恢宏', scores: { zhugeliang: 1, wuzetian: 1, qinshihuang: 1 } }
+                ]
+            }, {
+                text: '你对自己的评价更接近？',
+                options: [
+                    { label: 'A', text: '才华横溢，浪漫多情', scores: { libai: 2, liqingzhao: 1 } },
+                    { label: 'B', text: '深谋远虑，沉稳睿智', scores: { zhugeliang: 2, wangyangming: 1 } },
+                    { label: 'C', text: '雄心勃勃，不甘平凡', scores: { wuzetian: 2, qinshihuang: 2 } },
+                    { label: 'D', text: '豁达通透，乐天知命', scores: { sushis: 2, wangyangming: 1 } }
+                ]
+            }, {
+                text: '如果可以选择一个朝代生活，你会选？',
+                options: [
+                    { label: 'A', text: '盛唐——开放包容，气象万千', scores: { libai: 2, wuzetian: 1 } },
+                    { label: 'B', text: '三国——群雄逐鹿，英雄辈出', scores: { zhugeliang: 2, xiangyu: 1 } },
+                    { label: 'C', text: '宋朝——文化昌盛，精致典雅', scores: { sushis: 2, liqingzhao: 2 } },
+                    { label: 'D', text: '秦朝——开天辟地，万象更新', scores: { qinshihuang: 2 } }
+                ]
+            }, {
+                text: '你的人生信条更接近？',
+                options: [
+                    { label: 'A', text: '"人生得意须尽欢"', scores: { libai: 2, sushis: 1 } },
+                    { label: 'B', text: '"鞠躬尽瘁，死而后已"', scores: { zhugeliang: 2, wuzetian: 1 } },
+                    { label: 'C', text: '"成大事者不拘小节"', scores: { wuzetian: 2, qinshihuang: 2 } },
+                    { label: 'D', text: '"知行合一，致良知"', scores: { wangyangming: 2, liqingzhao: 1 } }
+                ]
+            }];
+
+            // ==================== 状态管理 ====================
+            const state = {
+                currentQuestion: 0,
+                scores: {},
+                answers: [],
+                isAnimating: false,
+                resultKey: null,
+                testStartTime: null
+            };
+
+            // ==================== DOM引用 ====================
+            const pageCover = document.getElementById('pageCover');
+            const pageQuiz = document.getElementById('pageQuiz');
+            const pageResult = document.getElementById('pageResult');
+            const startBtn = document.getElementById('startBtn');
+            const backBtn = document.getElementById('backBtn');
+            const currentQSpan = document.getElementById('currentQ');
+            const progressBar = document.getElementById('progressBar');
+            const questionText = document.getElementById('questionText');
+            const optionsContainer = document.getElementById('optionsContainer');
+            const resultContent = document.getElementById('resultContent');
+            const toast = document.getElementById('toast');
+            const shareOverlay = document.getElementById('shareOverlay');
+            const copyLinkBtn = document.getElementById('copyLinkBtn');
+            const closeShareBtn = document.getElementById('closeShareBtn');
+            const coverStats = document.getElementById('coverStats');
+
+            // ==================== 工具函数 ====================
+            function showToast(message, duration = 2000) {
+                toast.textContent = message;
+                toast.classList.add('show');
+                clearTimeout(toast._timeout);
+                toast._timeout = setTimeout(() => {
+                    toast.classList.remove('show');
+                }, duration);
+            }
+
+            function switchPage(fromPage, toPage, direction = 'forward') {
+                if (state.isAnimating) return;
+                state.isAnimating = true;
+
+                fromPage.classList.add(direction === 'forward' ? 'exit-left' : 'exit-right');
+                fromPage.classList.remove('active');
+
+                setTimeout(() => {
+                    fromPage.classList.remove('exit-left', 'exit-right');
+                    toPage.classList.add('active');
+                    state.isAnimating = false;
+                }, 400);
+            }
+
+            function initScores() {
+                const scores = {};
+                characterKeys.forEach(key => { scores[key] = 0; });
+                return scores;
+            }
+
+            function resetState() {
+                state.currentQuestion = 0;
+                state.scores = initScores();
+                state.answers = [];
+                state.resultKey = null;
+                state.testStartTime = Date.now();
+                state.isAnimating = false;
+            }
+
+            function getResultFromScores() {
+                let maxScore = 0;
+                let resultKey = characterKeys[0];
+                // 找出最高分
+                for (const key of characterKeys) {
+                    if (state.scores[key] > maxScore) {
+                        maxScore = state.scores[key];
+                        resultKey = key;
+                    }
+                }
+                // 处理并列情况：在并列中随机选一个（但保留确定性——使用总得分作为种子）
+                const tiedKeys = characterKeys.filter(key => state.scores[key] === maxScore);
+                if (tiedKeys.length > 1) {
+                    const seed = tiedKeys.reduce((acc, k) => acc + state.scores[k] * k.length, 0);
+                    resultKey = tiedKeys[seed % tiedKeys.length];
+                }
+                return resultKey;
+            }
+
+            function updateCoverStats() {
+                const base = 32847;
+                const timeSeed = Math.floor(Date.now() / 60000); // 每分钟变化
+                const pseudoRandom = (timeSeed * 7919) % 37;
+                coverStats.textContent = `已有 ${(base + pseudoRandom).toLocaleString()} 人参与测试`;
+            }
+
+            // ==================== 封面页 ====================
+            startBtn.addEventListener('click', () => {
+                resetState();
+                renderQuestion(0);
+                switchPage(pageCover, pageQuiz, 'forward');
+            });
+
+            // ==================== 答题逻辑 ====================
+            function renderQuestion(index) {
+                if (index < 0) index = 0;
+                if (index >= questions.length) {
+                    showResult();
+                    return;
+                }
+                state.currentQuestion = index;
+                const q = questions[index];
+                currentQSpan.textContent = index + 1;
+                questionText.textContent = q.text;
+                progressBar.style.width = ((index / questions.length) * 100) + '%';
+
+                // 更新返回按钮
+                if (index > 0) {
+                    backBtn.style.opacity = '1';
+                    backBtn.style.pointerEvents = 'all';
+                } else {
+                    backBtn.style.opacity = '0';
+                    backBtn.style.pointerEvents = 'none';
+                }
+
+                // 生成选项
+                optionsContainer.innerHTML = '';
+                q.options.forEach((opt, optIndex) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option-btn';
+                    btn.innerHTML = `<span class="option-label">${opt.label}.</span> ${opt.text}`;
+                    btn.addEventListener('click', () => handleOptionSelect(optIndex, btn));
+                    optionsContainer.appendChild(btn);
+                    // 入场动画
+                    btn.style.opacity = '0';
+                    btn.style.transform = 'translateY(12px)';
+                    setTimeout(() => {
+                        btn.style.transition = 'opacity 0.4s ease, transform 0.4s ease, border-color 0.3s, box-shadow 0.3s, background 0.3s, scale 0.2s';
+                        btn.style.opacity = '1';
+                        btn.style.transform = 'translateY(0)';
+                    }, optIndex * 80);
+                });
+            }
+
+            function handleOptionSelect(optIndex, btnElement) {
+                if (state.isAnimating) return;
+                state.isAnimating = true;
+
+                // 标记选中
+                const allOptions = optionsContainer.querySelectorAll('.option-btn');
+                allOptions.forEach(btn => btn.classList.remove('selected'));
+                btnElement.classList.add('selected');
+
+                // 计分
+                const q = questions[state.currentQuestion];
+                const selectedOpt = q.options[optIndex];
+                const scoresToAdd = selectedOpt.scores || {};
+                for (const key in scoresToAdd) {
+                    if (state.scores[key] !== undefined) {
+                        state.scores[key] += scoresToAdd[key];
+                    }
+                }
+                state.answers.push(optIndex);
+
+                // 延迟进入下一题
+                setTimeout(() => {
+                    if (state.currentQuestion + 1 < questions.length) {
+                        progressBar.style.width = (((state.currentQuestion + 1) / questions.length) * 100) + '%';
+                        renderQuestion(state.currentQuestion + 1);
+                        state.isAnimating = false;
+                    } else {
+                        progressBar.style.width = '100%';
+                        showResult();
+                        state.isAnimating = false;
+                    }
+                }, 380);
+            }
+
+            backBtn.addEventListener('click', () => {
+                if (state.isAnimating || state.currentQuestion === 0) return;
+                // 简单回退：撤销上一题的计分
+                if (state.answers.length > 0) {
+                    const lastAnswer = state.answers.pop();
+                    const lastQ = questions[state.currentQuestion - 1];
+                    if (lastQ) {
+                        const opt = lastQ.options[lastAnswer];
+                        if (opt && opt.scores) {
+                            for (const key in opt.scores) {
+                                if (state.scores[key] !== undefined) {
+                                    state.scores[key] -= opt.scores[key];
+                                }
+                            }
+                        }
+                    }
+                }
+                renderQuestion(state.currentQuestion - 1);
+            });
+
+            // ==================== 结果页 ====================
+            function showResult() {
+                const resultKey = getResultFromScores();
+                state.resultKey = resultKey;
+                const char = characters[resultKey];
+
+                resultContent.innerHTML = `
+                    <div class="result-seal">${char.emoji}</div>
+                    <p class="result-title-label">你的历史人物是</p>
+                    <h2 class="result-name">${char.name}</h2>
+                    <p class="result-title">${char.title}</p>
+                    <div class="result-tags">
+                        ${char.tags.map(tag => `<span class="result-tag">${tag}</span>`).join('')}
+                    </div>
+                    <div class="result-desc">${char.desc}</div>
+                    <div class="result-quote">${char.quote}</div>
+                    <div class="result-share-section">
+                        <div class="btn-group">
+                            <button class="btn btn-primary" id="shareResultBtn">📤 分享结果</button>
+                            <button class="btn btn-outline" id="retakeBtn">🔄 重新测试</button>
+                        </div>
+                        <button class="btn btn-gold btn-sm" id="viewAllBtn" style="margin-top:12px;">查看所有历史人物</button>
+                        <p class="result-share-hint">分享给好友，看看他们的测试结果</p>
+                    </div>
+                `;
+
+                // 绑定事件
+                document.getElementById('shareResultBtn').addEventListener('click', openShareModal);
+                document.getElementById('retakeBtn').addEventListener('click', () => {
+                    resetState();
+                    renderQuestion(0);
+                    switchPage(pageResult, pageQuiz, 'back');
+                });
+                document.getElementById('viewAllBtn').addEventListener('click', showAllCharacters);
+
+                switchPage(pageQuiz, pageResult, 'forward');
+                state.isAnimating = false;
+            }
+
+            function showAllCharacters() {
+                const allChars = characterKeys.map(key => {
+                    const c = characters[key];
+                    return `${c.emoji} ${c.name}（${c.title}）`;
+                }).join('\n');
+                showToast('📜 全部人物：\n' + allChars, 4000);
+            }
+
+            // ==================== 分享功能 ====================
+            function openShareModal() {
+                shareOverlay.classList.add('show');
+            }
+
+            function closeShareModal() {
+                shareOverlay.classList.remove('show');
+            }
+
+            closeShareBtn.addEventListener('click', closeShareModal);
+            shareOverlay.addEventListener('click', (e) => {
+                if (e.target === shareOverlay) closeShareModal();
+            });
+
+            copyLinkBtn.addEventListener('click', async () => {
+                const shareUrl = buildShareUrl();
+                try {
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        await navigator.clipboard.writeText(shareUrl);
+                        showToast('✅ 链接已复制，快去分享吧！');
+                    } else {
+                        fallbackCopy(shareUrl);
+                    }
+                } catch (err) {
+                    fallbackCopy(shareUrl);
+                }
+                closeShareModal();
+            });
+
+            function fallbackCopy(text) {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                textarea.style.position = 'fixed';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    document.execCommand('copy');
+                    showToast('✅ 链接已复制，快去分享吧！');
+                } catch (e) {
+                    showToast('📋 请手动复制：' + text, 3000);
+                }
+                document.body.removeChild(textarea);
+            }
+
+            function buildShareUrl() {
+                const baseUrl = window.location.origin + window.location.pathname;
+                const resultParam = state.resultKey ? `?result=${state.resultKey}` : '';
+                return baseUrl + resultParam;
+            }
+
+            // 检查URL参数中的分享结果
+            function checkSharedResult() {
+                const params = new URLSearchParams(window.location.search);
+                const resultParam = params.get('result');
+                if (resultParam && characters[resultParam]) {
+                    // 展示分享者的结果
+                    state.resultKey = resultParam;
+                    const char = characters[resultParam];
+                    resultContent.innerHTML = `
+                        <div class="result-seal">${char.emoji}</div>
+                        <p class="result-title-label">朋友的历史人物是</p>
+                        <h2 class="result-name">${char.name}</h2>
+                        <p class="result-title">${char.title}</p>
+                        <div class="result-tags">
+                            ${char.tags.map(tag => `<span class="result-tag">${tag}</span>`).join('')}
+                        </div>
+                        <div class="result-desc">${char.desc}</div>
+                        <div class="result-quote">${char.quote}</div>
+                        <div style="margin-top:16px;text-align:center;">
+                            <button class="btn btn-primary" id="alsoTestBtn" style="margin-bottom:12px;">我也要测一测</button>
+                            <br>
+                            <button class="btn btn-outline btn-sm" id="sharedRetakeBtn">🔄 重新测试</button>
+                        </div>
+                        <p class="result-share-hint" style="margin-top:12px;">想知道你是哪位历史人物？点击上方按钮开始测试</p>
+                    `;
+                    document.getElementById('alsoTestBtn').addEventListener('click', () => {
+                        resetState();
+                        renderQuestion(0);
+                        switchPage(pageResult, pageQuiz, 'back');
+                    });
+                    document.getElementById('sharedRetakeBtn').addEventListener('click', () => {
+                        resetState();
+                        renderQuestion(0);
+                        switchPage(pageResult, pageQuiz, 'back');
+                    });
+                    // 直接显示结果页
+                    pageCover.classList.remove('active');
+                    pageQuiz.classList.remove('active');
+                    pageResult.classList.add('active');
+                }
+            }
+
+            // ==================== 键盘支持 ====================
+            document.addEventListener('keydown', (e) => {
+                if (e.key >= '1' && e.key <= '4') {
+                    const idx = parseInt(e.key) - 1;
+                    const btns = optionsContainer.querySelectorAll('.option-btn');
+                    if (btns.length > idx && pageQuiz.classList.contains('active') && !state
+                        .isAnimating) {
+                        btns[idx].click();
+                    }
+                }
+                if (e.key === 'Enter' && pageCover.classList.contains('active')) {
+                    startBtn.click();
+                }
+                if (e.key === 'Escape') {
+                    closeShareModal();
+                }
+            });
+
+            // ==================== 初始化 ====================
+            function init() {
+                resetState();
+                updateCoverStats();
+                // 随机微调参与人数
+                setInterval(updateCoverStats, 60000);
+                // 检查分享链接
+                checkSharedResult();
+                // 预热题目显示
+                if (pageQuiz.classList.contains('active') === false && pageResult.classList.contains(
+                        'active') === false) {
+                    // 封面页默认激活
+                    pageCover.classList.add('active');
+                }
+            }
+
+            // 处理移动端触摸反馈
+            document.addEventListener('touchstart', () => {}, { passive: true });
+
+            // 启动
+            init();
+
+            // 暴露一些方法到全局以便调试
+            window.__testApp = {
+                characters,
+                questions,
+                state,
+                resetTest: () => {
+                    resetState();
+                    renderQuestion(0);
+                    switchPage(pageResult, pageQuiz, 'back');
+                }
+            };
+
+            console.log('📜 历史人物测试已加载完成！');
+            console.log('💡 提示：按数字键1-4快速选择答案，按Enter开始测试');
+        })();
+    </script>
+</body>
+</html>
